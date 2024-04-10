@@ -1,0 +1,24 @@
+services:
+  application:
+    # image: python:latest
+    container_name: websocket-teste
+    build: ./application
+    ports:
+      - 3102:8002
+    volumes:
+      - vol-teste:/data/db
+    restart: always
+
+  nginx:
+    container_name: nginx-exemplo
+    build: ./nginx
+    restart: always
+    volumes:
+      - spa-teste:/var/www/html
+    ports:
+      - 3103:80
+    depends_on:
+      - application
+volumes:
+  vol-teste:
+  spa-teste:

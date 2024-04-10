@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>&lt;&lt; {{user_name}}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        #container {
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container">
+        <!-- Dado carregado pelo websocket: data = {texto: 'Exemplo', cor_fonte: '#0000ff', cor_fundo: '#cccccc', anim: 'slide', velocidade: '7'} -->
+        <h1 id="texto">{{title}}</h1>
+        <form>
+            <label>
+                <span>TEXTO</span>
+                <input type="text" id="input_data">
+            </label>
+            <button type="button" id="btn_send">Enviar</button>
+        </form>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            var ws = null;
+            var keep_alive
+            var authToken
+            
+            const input_data = document.getElementById('input_data')
+            const btn_send = document.getElementById('btn_send')
+            btn_send.onclick = sendInputData
+            ws = new WebSocket(`ws${window.location.protocol == 'https:' ? 's' : ''}://${window.location.host}/ws/{{user_name}}`)
+            ws.onopen = () => {
+                cookieStore.get("authToken")
+                .then(data => {
+                    authToken = data.value
+                    ws.send(
+                    JSON.stringify({
+                        "connectionParams": {
+                            "authToken": authToken
+                        }
+                    })
+                )
+                })
+
+//                ws.send(
+//                    JSON.stringify({
+//                        "connectionParams": {
+//                            "authToken": "tokem_qualuer"
+//                        }
+//                    })
+//                )
+            }
+            ws.onmessage = async function ({ data } = event) {
+                payload = JSON.parse(data)
+                console.log("Payload: ", payload) //Mostra DATA
+            }
+
+            function sendInputData() {
+                ws.send(JSON.stringify({
+                    "data": input_data.value
+                }))
+                input_data.value = ""
+                console.log(authToken)
+            }
+
+        })
+    </script>
+</body>
+
+</html>
